@@ -1,6 +1,6 @@
 FROM openjdk:oraclelinux8
-WORKDIR /app
-COPY target/*.jar app.jar
+WORKDIR /hack
+COPY target/*.jar hack.jar
 EXPOSE 8081
-ENTRYPOINT ["java","-jar","app.jar"]
+ENTRYPOINT ["java","-jar","hack.jar"]
 
