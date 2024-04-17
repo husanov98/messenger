@@ -1,6 +1,7 @@
 uz/mh/messenger/model/ApiResponse.class
 uz/mh/messenger/bot/BotService.class
 uz/mh/messenger/enums/StatementStatus.class
+uz/mh/messenger/config/WebConfig.class
 uz/mh/messenger/service/TdlightService.class
 uz/mh/messenger/model/Group.class
 uz/mh/messenger/config/ScheduledConfig.class
