@@ -22,13 +22,13 @@ public class TdlightController {
     }
 
 
-    @PostMapping(value = "sendPhoneNumber",consumes = {"multipart/form-data"})
+    @PostMapping(value = "/sendPhoneNumber",consumes = {"multipart/form-data"})
     public ResponseEntity<?> send(@RequestPart(name = "phoneNumber") String phoneNumber) throws Exception {
         ApiResponse apiResponse = service.registerwithPhoneNumber(phoneNumber);
         return new ResponseEntity<>(apiResponse, HttpStatusCode.valueOf(apiResponse.getCode()));
     }
 
-    @PostMapping(value = "sendCode",consumes = {"multipart/form-data"})
+    @PostMapping(value = "/sendCode",consumes = {"multipart/form-data"})
     public ResponseEntity<?> sendCode(@RequestPart(name = "phoneNumber") String phoneNumber,
                                       @RequestPart(name = "code") String code) throws Exception {
         ApiResponse apiResponse = service.enterAuthenticationCode(phoneNumber, code);
