@@ -51,7 +51,7 @@ public class StatementService {
     private void sendGroups(StatementDto statementDto) {
         if (statementDto.getStatus().equals(StatementStatus.ACTUAL)){
             try {
-                int count = tdlightService.sendMessageToGroup("+998948183201", statementDto.getStatementId() + statementDto.getText(), "egs");
+                int count = tdlightService.sendMessageToGroup("+998946604481", statementDto.getStatementId() + statementDto.getText(), "egs");
                 TgmData data = new TgmData(statementDto.getStatementId().substring(1),count,count);
                 System.out.println(data);
                 List<TgmData> dataList = List.of(data);
