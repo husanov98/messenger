@@ -342,7 +342,7 @@ public class TdlightService implements Runnable{
         }
         return apiResponse;
     }
-
+//    asab
     public ApiResponse addCurrentAccountToGroups(String mainPhoneNumber,String virtualPhoneNumber) throws Exception{
         Init.init();
         Log.setLogMessageHandler(1, new Slf4JLogMessageHandler());
