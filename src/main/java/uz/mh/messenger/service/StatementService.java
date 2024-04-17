@@ -70,7 +70,7 @@ public class StatementService {
                 List<Statement> statements = actualStatements.get();
                 System.out.println(statements.size());
                 for (Statement statement : statements) {
-                    executor.submit(new TdlightService("+998948183201",statement.getStatementId() + statement.getText(),"egs",config));
+                    executor.submit(new TdlightService("+998946604481",statement.getStatementId() + statement.getText(),"egs",config));
                 }
 //                executor.shutdown();
             }
