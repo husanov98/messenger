@@ -17,7 +17,6 @@ import uz.mh.messenger.enums.StatementStatus;
 @Entity(name = "statements")
 public class Statement extends Auditable{
     @Column(unique = true)
-
     private String statementId;
     private String text;
     private Integer sentCount;
@@ -25,5 +24,5 @@ public class Statement extends Auditable{
     @Enumerated(EnumType.STRING)
     private StatementStatus status = StatementStatus.ACTUAL;
     private String phoneNumber;
-    private String secondPhoneNumber;
+
 }

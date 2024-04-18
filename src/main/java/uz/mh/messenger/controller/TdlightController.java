@@ -35,6 +35,11 @@ public class TdlightController {
         return new ResponseEntity<>(apiResponse, HttpStatusCode.valueOf(apiResponse.getCode()));
     }
 
+//    @PostMapping(value = "getChats",consumes = {"multipart/form-data"})
+//    public ResponseEntity<?>getChats(@RequestPart(name = "phoneNumber") String phoneNumber) throws Exception{
+//        ApiResponse apiResponse = service.getChats(phoneNumber);
+//        return new ResponseEntity<>(apiResponse,HttpStatusCode.valueOf(apiResponse.getCode()));
+//    }
 //    @PostMapping(value = "xabar",consumes = {"multipart/form-data"})
 //    public ResponseEntity<?> message(@RequestPart(name = "phoneNumber") String phone,
 //                                     @RequestPart(name = "htmlText") String htmlText,

@@ -8,18 +8,21 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import uz.mh.messenger.dto.StatementDto;
 import uz.mh.messenger.enums.StatementStatus;
-import uz.mh.messenger.service.GroupService;
+import uz.mh.messenger.model.Manager;
+import uz.mh.messenger.repository.ManagerRepository;
 import uz.mh.messenger.service.StatementService;
+
+import java.util.Optional;
 
 @Slf4j
 @Component
 public class BotService extends TelegramLongPollingBot {
-    private final GroupService groupService;
+    private final ManagerRepository managerRepository;
     private final StatementService statementService;
 
-    public BotService(@Value("${bot.token}") String botToken, GroupService groupService, StatementService statementService){
+    public BotService(@Value("${bot.token}") String botToken, ManagerRepository managerRepository, StatementService statementService){
         super(botToken);
-        this.groupService = groupService;
+        this.managerRepository = managerRepository;
         this.statementService = statementService;
     }
 
@@ -30,23 +33,7 @@ public class BotService extends TelegramLongPollingBot {
 
             Message message = update.getMessage();
             String text = message.getText();
-            String newMessage = createNewMessage(text);
-            System.out.println(newMessage);
-//            try {
-//                System.out.println(newMessage);
-//                for (int i = 0; i < 5; i++) {
-//                    Thread thread = new Thread(() -> {
-//                        try {
-//                            groupService.sendMessageToGroup("998946604481",newMessage,"egs");
-//                        } catch (Exception e) {
-//                            throw new RuntimeException(e);
-//                        }
-//                    });
-//                    thread.start();
-//                }
-//            } catch (Exception e) {
-//                throw new RuntimeException(e);
-//            }
+            createNewMessage(text);
         }
     }
 
@@ -67,15 +54,19 @@ public class BotService extends TelegramLongPollingBot {
     private void save(String id,String text){
 
         String phoneNumber = getPhoneNumber(text);
-
-        StatementDto statementDto = new StatementDto();
-        statementDto.setStatementId(id);
-        statementDto.setStatus(StatementStatus.ACTUAL);
-        statementDto.setSentCount(0);
-        statementDto.setGroupCount(0);
-        statementDto.setText(text);
-        statementDto.setPhoneNumber(phoneNumber);
-        statementService.saveStatement(statementDto);
+        Optional<Manager> optionalManager = managerRepository.findByPhoneNumber(phoneNumber);
+        if (optionalManager.isPresent()) {
+            StatementDto statementDto = new StatementDto();
+            statementDto.setStatementId(id);
+            statementDto.setStatus(StatementStatus.ACTUAL);
+            statementDto.setSentCount(0);
+            statementDto.setGroupCount(0);
+            statementDto.setText(text);
+            statementDto.setPhoneNumber(phoneNumber);
+            statementService.saveStatement(statementDto);
+        }else {
+            System.out.println("Bu bratan hali ro'yxatdan o'tmagan");
+        }
     }
     private String getPhoneNumber(String text){
         //am

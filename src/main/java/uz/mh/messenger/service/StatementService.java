@@ -10,6 +10,7 @@ import uz.mh.messenger.dto.TgmData;
 import uz.mh.messenger.enums.StatementStatus;
 import uz.mh.messenger.mapper.StatementMapper;
 import uz.mh.messenger.model.Statement;
+import uz.mh.messenger.repository.ManagerRepository;
 import uz.mh.messenger.repository.StatementRepository;
 
 
@@ -25,15 +26,17 @@ public class StatementService {
     private final TdlightService tdlightService;
     private final TdLibConfig config;
     private final IntegrateWithEgs egs;
+    private final ManagerRepository managerRepository;
     @Autowired
     private ScheduledAnnotationBeanPostProcessor postProcessor;
     ExecutorService executor = Executors.newFixedThreadPool(5);
-    public StatementService(StatementMapper statementMapper, StatementRepository statementRepository, TdlightService tdlightService, TdLibConfig config, IntegrateWithEgs egs) {
+    public StatementService(StatementMapper statementMapper, StatementRepository statementRepository, TdlightService tdlightService, TdLibConfig config, IntegrateWithEgs egs, ManagerRepository managerRepository) {
         this.statementMapper = statementMapper;
         this.statementRepository = statementRepository;
         this.tdlightService = tdlightService;
         this.config = config;
         this.egs = egs;
+        this.managerRepository = managerRepository;
     }
 
     public void saveStatement(StatementDto statementDto) {
@@ -51,7 +54,7 @@ public class StatementService {
     private void sendGroups(StatementDto statementDto) {
         if (statementDto.getStatus().equals(StatementStatus.ACTUAL)){
             try {
-                int count = tdlightService.sendMessageToGroup("+998946604481", statementDto.getStatementId() + statementDto.getText(), "egs");
+                int count = tdlightService.sendMessageToGroup(statementDto.getPhoneNumber(), statementDto.getStatementId() + statementDto.getText(), "egs");
                 TgmData data = new TgmData(statementDto.getStatementId().substring(1),count,count);
                 System.out.println(data);
                 List<TgmData> dataList = List.of(data);
@@ -70,7 +73,7 @@ public class StatementService {
                 List<Statement> statements = actualStatements.get();
                 System.out.println(statements.size());
                 for (Statement statement : statements) {
-                    executor.submit(new TdlightService("+998946604481",statement.getStatementId() + statement.getText(),"egs",config));
+                    executor.submit(new TdlightService(statement.getPhoneNumber(),statement.getStatementId() + statement.getText(),"egs",config,managerRepository));
                 }
 //                executor.shutdown();
             }

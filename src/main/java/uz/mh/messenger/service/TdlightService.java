@@ -11,6 +11,8 @@ import uz.mh.messenger.config.TdLibConfig;
 import uz.mh.messenger.db.Idlar;
 import uz.mh.messenger.model.ApiResponse;
 import uz.mh.messenger.model.Group;
+import uz.mh.messenger.model.Manager;
+import uz.mh.messenger.repository.ManagerRepository;
 import uz.mh.messenger.response.MessageResponse;
 
 
@@ -26,16 +28,52 @@ public class TdlightService implements Runnable{
     private String db;
 
     private final TdLibConfig config;
+    private final ManagerRepository managerRepository;
 
-    public TdlightService(String phoneNumber, String text, String db,TdLibConfig config){
+    public TdlightService(String phoneNumber, String text, String db,TdLibConfig config,ManagerRepository managerRepository){
         this.phoneNumber = phoneNumber;
         this.text = text;
         this.db = db;
         this.config = config;
+        this.managerRepository = managerRepository;
     }
 
 
+    public ApiResponse getChats(String phoneNumber) throws Exception{
+        Init.init();
+        Log.setLogMessageHandler(1, new Slf4JLogMessageHandler());
+        ApiResponse apiResponse = new ApiResponse();
+        try (SimpleTelegramClientFactory clientFactory = new SimpleTelegramClientFactory()) {
+            TDLibSettings settings = config.getTDLibSettings(phoneNumber);
+            SimpleTelegramClientBuilder clientBuilder = config.getBuilder(clientFactory, settings);
+            AuthenticationSupplier user = config.getCurrentUser(settings, phoneNumber, clientFactory);
+            try (ExampleApp app = new ExampleApp(clientBuilder, user, 0)) {
 
+                try {
+                    TdApi.GetChats getChats = new TdApi.GetChats(null,200);
+                    Thread.sleep(500);
+                    TdApi.Chats chats = app.getClient().send(getChats).join();
+                    for (long chatId : chats.chatIds) {
+                        TdApi.GetChat getChat = new TdApi.GetChat(chatId);
+                        CompletableFuture<TdApi.Chat> send = app.getClient().send(getChat);
+                        TdApi.Chat chat = send.join();
+                        System.out.println(chat.title + ", " + chat.id + "\n");
+                    }
+
+                    apiResponse.setCode(200);
+                }catch (Exception e){
+                    TelegramError error = (TelegramError) e.getCause();
+
+                    int errorCode = error.getErrorCode();
+                    apiResponse.setError(e.getMessage());
+                    apiResponse.setSuccess(false);
+                    apiResponse.setCode(errorCode);
+                    return apiResponse;
+                }
+            }
+        }
+        return apiResponse;
+    }
 
     public ApiResponse deleteMessage(String messageId, String chatId, String phoneNumber, String db) throws Exception{
         Init.init();
@@ -48,6 +86,7 @@ public class TdlightService implements Runnable{
             try (ExampleApp app = new ExampleApp(clientBuilder, user, 0)) {
 
                 try {
+
                     TdApi.DeleteMessages deleteMessages = new TdApi.DeleteMessages();
                     deleteMessages.chatId = Long.parseLong(chatId);
                     deleteMessages.messageIds = new long[]{Long.parseLong(messageId)};
@@ -197,7 +236,7 @@ public class TdlightService implements Runnable{
 
                 try {
 
-                    System.out.println("uxladi");
+//                    System.out.println("uxladi");
                     Thread.sleep(2000);
 
 //                    setCode(parol);
@@ -210,6 +249,8 @@ public class TdlightService implements Runnable{
                     CompletableFuture<TdApi.Ok> request = app.getClient().send(authenticationCode);
                     TdApi.Ok result = request.get();
                     apiResponse.setCode(200);
+                    Manager manager = new Manager(phoneNumber);
+                    managerRepository.save(manager);
                 }catch (Exception e){
                     TelegramError error = (TelegramError) e.getCause();
                     int errorCode = error.getErrorCode();
