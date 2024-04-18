@@ -14,7 +14,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=1998
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
-      - "9090:8081"
+      - "9090:8443"
 
   postgres:
     image: postgres:latest
