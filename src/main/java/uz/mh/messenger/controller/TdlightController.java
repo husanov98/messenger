@@ -11,7 +11,7 @@ import uz.mh.messenger.service.TdlightService;
 
 
 @RestController
-@CrossOrigin(origins = "https://shahzodnazarov.github.io/TelegramScrape/")
+@CrossOrigin(origins = "*")
 public class TdlightController {
 
 
