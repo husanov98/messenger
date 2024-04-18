@@ -11,7 +11,7 @@ import uz.mh.messenger.service.TdlightService;
 
 
 @RestController
-@CrossOrigin(origins = "*")
+//@CrossOrigin(origins = "*")
 public class TdlightController {
 
 
