@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProc
 import org.springframework.stereotype.Service;
 import uz.mh.messenger.config.TdLibConfig;
 import uz.mh.messenger.dto.StatementDto;
-import uz.mh.messenger.dto.TgmData;
 import uz.mh.messenger.enums.StatementStatus;
 import uz.mh.messenger.mapper.StatementMapper;
 import uz.mh.messenger.model.Statement;
@@ -54,26 +53,23 @@ public class StatementService {
     private void sendGroups(StatementDto statementDto) {
         if (statementDto.getStatus().equals(StatementStatus.ACTUAL)){
             try {
-                int count = tdlightService.sendMessageToGroup(statementDto.getPhoneNumber(), statementDto.getStatementId() + statementDto.getText(), "egs");
-                TgmData data = new TgmData(statementDto.getStatementId().substring(1),count,count);
-                System.out.println(data);
-                List<TgmData> dataList = List.of(data);
-                egs.sendToEgs(dataList,"egs");
+                tdlightService.sendMessageToGroup(statementDto);
+                statementRepository.editStatementSentCount(statementDto.getGroupCount(), statementDto.getSentCount(),statementDto.getStatementId());
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
     }
-    @Scheduled(cron = "0 */10 * * * *")
+    @Scheduled(cron = "0 */10 4-20 * * *")
     public void sendPeriodic(){
         try {
             Optional<List<Statement>> actualStatements = statementRepository.getActualStatements();
             if (actualStatements.isPresent()) {
-                System.out.println("ishladi");
                 List<Statement> statements = actualStatements.get();
                 System.out.println(statements.size());
                 for (Statement statement : statements) {
-                    executor.submit(new TdlightService(statement.getPhoneNumber(),statement.getStatementId() + statement.getText(),"egs",config,managerRepository));
+                    StatementDto statementDto = statementMapper.mapToStatementDto(statement);
+                    executor.submit(new TdlightService(config,managerRepository,statementDto, egs));
                 }
 //                executor.shutdown();
             }

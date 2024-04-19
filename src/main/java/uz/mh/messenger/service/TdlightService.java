@@ -9,33 +9,34 @@ import org.springframework.stereotype.Service;
 import uz.mh.messenger.config.ExampleApp;
 import uz.mh.messenger.config.TdLibConfig;
 import uz.mh.messenger.db.Idlar;
+import uz.mh.messenger.dto.StatementDto;
+import uz.mh.messenger.dto.TgmData;
 import uz.mh.messenger.model.ApiResponse;
-import uz.mh.messenger.model.Group;
 import uz.mh.messenger.model.Manager;
 import uz.mh.messenger.repository.ManagerRepository;
 import uz.mh.messenger.response.MessageResponse;
 
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
 public class TdlightService implements Runnable{
-    private String phoneNumber;
-    private String text;
-    private String db;
 
     private final TdLibConfig config;
     private final ManagerRepository managerRepository;
+    private final StatementDto statementDto;
+    private final IntegrateWithEgs egs;
 
-    public TdlightService(String phoneNumber, String text, String db,TdLibConfig config,ManagerRepository managerRepository){
-        this.phoneNumber = phoneNumber;
-        this.text = text;
-        this.db = db;
+
+    public TdlightService(TdLibConfig config, ManagerRepository managerRepository, StatementDto statementDto, IntegrateWithEgs egs){
         this.config = config;
         this.managerRepository = managerRepository;
+        this.statementDto = statementDto;
+        this.egs = egs;
+
     }
 
 
@@ -152,7 +153,7 @@ public class TdlightService implements Runnable{
     }
 
 
-    public int sendMessageToGroup(String phoneNumber, String htmlText,String db) throws Exception {
+    public int sendMessageToGroup(StatementDto statementDto) throws Exception {
 
         Init.init();
 
@@ -166,9 +167,9 @@ public class TdlightService implements Runnable{
             s++;
             System.out.println(s);
             try (SimpleTelegramClientFactory clientFactory = new SimpleTelegramClientFactory()) {
-                TDLibSettings settings = config.getTDLibSettings(phoneNumber);
+                TDLibSettings settings = config.getTDLibSettings(statementDto.getPhoneNumber());
                 SimpleTelegramClientBuilder clientBuilder = config.getBuilder(clientFactory, settings);
-                AuthenticationSupplier user = config.getCurrentUser(settings, phoneNumber, clientFactory);
+                AuthenticationSupplier user = config.getCurrentUser(settings, statementDto.getPhoneNumber(), clientFactory);
                 try (ExampleApp app = new ExampleApp(clientBuilder, user, 0)) {
                     for (Long id : Idlar.superGroupIds) {
                         s++;
@@ -176,7 +177,7 @@ public class TdlightService implements Runnable{
                         System.out.println(s);
                         try {
                             TdApi.SendMessage messageToGroup = new TdApi.SendMessage();
-                            TdApi.ParseTextEntities textEntities = config.parseModeHtml(htmlText);
+                            TdApi.ParseTextEntities textEntities = config.parseModeHtml(statementDto.getStatementId() + statementDto.getText());
                             TdApi.Message sentMessage;
                             messageToGroup.chatId = id;
                             TdApi.InputMessageText text = new TdApi.InputMessageText();
@@ -215,6 +216,7 @@ public class TdlightService implements Runnable{
         long end = System.currentTimeMillis();
         long duration = (end - begin) / 1000;
         System.out.println(duration + " seconds, " + (duration % 1000) + " milliseconds");
+        sendToEgs(statementDto,count);
         return count;
     }
 
@@ -250,7 +252,10 @@ public class TdlightService implements Runnable{
                     TdApi.Ok result = request.get();
                     apiResponse.setCode(200);
                     Manager manager = new Manager(phoneNumber);
-                    managerRepository.save(manager);
+                    Optional<Manager> managerOptional = managerRepository.findByPhoneNumber(phoneNumber);
+                    if (managerOptional.isEmpty()) {
+                        managerRepository.save(manager);
+                    }
                 }catch (Exception e){
                     TelegramError error = (TelegramError) e.getCause();
                     int errorCode = error.getErrorCode();
@@ -349,10 +354,21 @@ public class TdlightService implements Runnable{
     @Override
     public void run() {
         try {
-            sendMessageToGroup(phoneNumber,text,db);
+            sendMessageToGroup(statementDto);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendToEgs(StatementDto statementDto,int count){
+        Integer groupCount = statementDto.getGroupCount();
+        if (groupCount < count){
+            statementDto.setGroupCount(count);
+        }
+        statementDto.setSentCount(statementDto.getSentCount() + count);
+        TgmData data = new TgmData(statementDto.getStatementId().substring(1),statementDto.getGroupCount(),statementDto.getSentCount());
+        List<TgmData> dataList = List.of(data);
+        egs.sendToEgs(dataList,"egs");
     }
 
 }

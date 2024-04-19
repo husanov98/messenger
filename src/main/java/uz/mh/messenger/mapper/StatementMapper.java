@@ -10,4 +10,5 @@ import uz.mh.messenger.model.Statement;
 public class StatementMapper {
     private static final ModelMapper modelMapper = new ModelMapper();
     public Statement mapDtoToStatement(StatementDto statementDto){return modelMapper.map(statementDto,Statement.class);}
+    public StatementDto mapToStatementDto(Statement statement){return modelMapper.map(statement, StatementDto.class);}
 }

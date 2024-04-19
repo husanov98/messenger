@@ -15,4 +15,6 @@ public interface StatementRepository extends JpaRepository<Statement,Long> {
     Optional<Statement> editStatement(String statementId);
     @Query(nativeQuery = true,value = "select * from statements where now() at time zone 'Asia/Tashkent' - statements.updated_at >= interval '30 minutes' and statements.status = 'ACTUAL'")
     Optional<List<Statement>> getActualStatements();
+    @Query(nativeQuery = true,value = "update statements set group_count =:groupCount, sent_count =:sentCount where statement_id =:statementId returning *")
+    Optional<Statement> editStatementSentCount(Integer groupCount,Integer sentCount,String statementId);
 }

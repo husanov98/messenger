@@ -1,6 +1,7 @@
 package uz.mh.messenger.dto;
 
 import lombok.*;
+import org.springframework.stereotype.Component;
 import uz.mh.messenger.enums.StatementStatus;
 
 
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Component
 public class StatementDto {
     private Long id;
     private boolean deleted;
