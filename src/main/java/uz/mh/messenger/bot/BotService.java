@@ -30,7 +30,7 @@ public class BotService extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             Long id = update.getMessage().getChat().getId();
-
+            System.out.println(id);
             Message message = update.getMessage();
             String text = message.getText();
             createNewMessage(text);

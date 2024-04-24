@@ -9,6 +9,10 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StatementRepository extends JpaRepository<Statement,Long> {
+    @Query(nativeQuery = true,value = "update statements set updated_at = now() at time zone 'Asia/Tashkent' where statement_id =:statementId returning *")
+    Optional<Statement> updateStatementUpdatedAt(String statementId);
+    @Query(nativeQuery = true,value = "select message_id from statements as s order by s.created_at desc limit 1")
+    Long finByCratedAt();
     @Query(nativeQuery = true,value = "select * from statements where statements.statement_id =:statementId")
     Optional<Statement> findByStatementId(String statementId);
     @Query(nativeQuery = true,value = "update statements set status = 'CLOSED' where statement_id =:statementId returning *")

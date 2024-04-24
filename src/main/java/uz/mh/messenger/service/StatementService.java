@@ -8,6 +8,7 @@ import uz.mh.messenger.config.TdLibConfig;
 import uz.mh.messenger.dto.StatementDto;
 import uz.mh.messenger.enums.StatementStatus;
 import uz.mh.messenger.mapper.StatementMapper;
+import uz.mh.messenger.model.Manager;
 import uz.mh.messenger.model.Statement;
 import uz.mh.messenger.repository.ManagerRepository;
 import uz.mh.messenger.repository.StatementRepository;
@@ -40,24 +41,26 @@ public class StatementService {
 
     public void saveStatement(StatementDto statementDto) {
         Optional<Statement> statementOptional = statementRepository.findByStatementId(statementDto.getStatementId());
-        if (statementOptional.isEmpty()) {
-            Statement statement = statementMapper.mapDtoToStatement(statementDto);
-            statementRepository.save(statement);
-        }else {
-            statementRepository.editStatement(statementDto.getStatementId());
-            statementDto.setStatus(StatementStatus.CLOSED);
-        }
-        sendGroups(statementDto);
+            if (statementOptional.isEmpty()) {
+                Statement statement = statementMapper.mapDtoToStatement(statementDto);
+                statementRepository.save(statement);
+            }else if (statementDto.getStatus().equals(StatementStatus.CLOSED)){
+                statementRepository.editStatement(statementDto.getStatementId());
+            }
+//        sendGroups(statementDto);
     }
 
     private void sendGroups(StatementDto statementDto) {
-        if (statementDto.getStatus().equals(StatementStatus.ACTUAL)){
+        Optional<Manager> optionalManager = managerRepository.findByPhoneNumber(statementDto.getPhoneNumber());
+        if (statementDto.getStatus().equals(StatementStatus.ACTUAL) && optionalManager.isPresent()){
             try {
                 tdlightService.sendMessageToGroup(statementDto);
                 statementRepository.editStatementSentCount(statementDto.getGroupCount(), statementDto.getSentCount(),statementDto.getStatementId());
             }catch (Exception e){
                 e.printStackTrace();
             }
+        }else {
+            System.out.println("Bu bratan hali ro'yxatdan o'tmagan yoki zapros yopilgan");
         }
     }
     @Scheduled(cron = "0 */10 4-20 * * *")
@@ -69,7 +72,12 @@ public class StatementService {
                 System.out.println(statements.size());
                 for (Statement statement : statements) {
                     StatementDto statementDto = statementMapper.mapToStatementDto(statement);
-                    executor.submit(new TdlightService(config,managerRepository,statementDto, egs));
+                    Optional<Manager> optionalManager = managerRepository.findByPhoneNumber(statementDto.getPhoneNumber());
+                    if (optionalManager.isPresent()) {
+                        executor.submit(new TdlightService(config,managerRepository,statementDto, egs, statementRepository));
+                    }else {
+                        System.out.println("Bu bratan hali ro'yxatdan o'tmagan");
+                    }
                 }
 //                executor.shutdown();
             }

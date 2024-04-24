@@ -24,4 +24,5 @@ public class StatementDto {
     private Integer groupCount;
     private StatementStatus status = StatementStatus.ACTUAL;
     private String phoneNumber;
+    private Long messageId;
 }

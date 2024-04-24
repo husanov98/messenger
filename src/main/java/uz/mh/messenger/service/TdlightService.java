@@ -14,13 +14,13 @@ import uz.mh.messenger.dto.TgmData;
 import uz.mh.messenger.model.ApiResponse;
 import uz.mh.messenger.model.Manager;
 import uz.mh.messenger.repository.ManagerRepository;
+import uz.mh.messenger.repository.StatementRepository;
 import uz.mh.messenger.response.MessageResponse;
 
 
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class TdlightService implements Runnable{
@@ -29,14 +29,16 @@ public class TdlightService implements Runnable{
     private final ManagerRepository managerRepository;
     private final StatementDto statementDto;
     private final IntegrateWithEgs egs;
+    private final StatementRepository statementRepository;
 
 
-    public TdlightService(TdLibConfig config, ManagerRepository managerRepository, StatementDto statementDto, IntegrateWithEgs egs){
+    public TdlightService(TdLibConfig config, ManagerRepository managerRepository, StatementDto statementDto, IntegrateWithEgs egs, StatementRepository statementRepository){
         this.config = config;
         this.managerRepository = managerRepository;
         this.statementDto = statementDto;
         this.egs = egs;
 
+        this.statementRepository = statementRepository;
     }
 
 
@@ -51,14 +53,18 @@ public class TdlightService implements Runnable{
             try (ExampleApp app = new ExampleApp(clientBuilder, user, 0)) {
 
                 try {
+
                     TdApi.GetChats getChats = new TdApi.GetChats(null,200);
-                    Thread.sleep(500);
+//                    Thread.sleep(500);
                     TdApi.Chats chats = app.getClient().send(getChats).join();
                     for (long chatId : chats.chatIds) {
                         TdApi.GetChat getChat = new TdApi.GetChat(chatId);
                         CompletableFuture<TdApi.Chat> send = app.getClient().send(getChat);
                         TdApi.Chat chat = send.join();
                         System.out.println(chat.title + ", " + chat.id + "\n");
+                        if (chat.id == -1001269019477L) {
+                            break;
+                        }
                     }
 
                     apiResponse.setCode(200);
@@ -206,6 +212,7 @@ public class TdlightService implements Runnable{
                         }
 
                     }
+                    statementRepository.updateStatementUpdatedAt(statementDto.getStatementId());
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -237,12 +244,7 @@ public class TdlightService implements Runnable{
             try (ExampleApp app = new ExampleApp(clientBuilder, user, 0)) {
 
                 try {
-
-//                    System.out.println("uxladi");
                     Thread.sleep(2000);
-
-//                    setCode(parol);
-//                    String code1 = getCode();
                     Thread.sleep(1000);
                     TdApi.CheckAuthenticationCode authenticationCode = new TdApi.CheckAuthenticationCode();
                     authenticationCode.code = parol;
@@ -303,53 +305,7 @@ public class TdlightService implements Runnable{
         }
         return apiResponse;
     }
-//    asab
-    public ApiResponse addCurrentAccountToGroups(String mainPhoneNumber,String virtualPhoneNumber) throws Exception{
-        Init.init();
-        Log.setLogMessageHandler(1, new Slf4JLogMessageHandler());
-        ApiResponse apiResponse = new ApiResponse();
-        int count = 0;
-        try(SimpleTelegramClientFactory clientFactory = new SimpleTelegramClientFactory()) {
-            TDLibSettings settings = config.getTDLibSettings(mainPhoneNumber);
-            SimpleTelegramClientBuilder clientBuilder = config.getBuilder(clientFactory, settings);
-            AuthenticationSupplier user = config.getCurrentUser(settings, mainPhoneNumber, clientFactory);
-            try (ExampleApp app = new ExampleApp(clientBuilder,user,0)){
-                long addingUserId = addingUserId(virtualPhoneNumber);
-                for (Long superGroupId : Idlar.superGroupIds) {
-                    try {
-                        TdApi.AddChatMember addChatMember = new TdApi.AddChatMember(superGroupId,addingUserId,100);
-                        CompletableFuture<TdApi.Ok> send = app.getClient().send(addChatMember);
-                        TdApi.Ok ok = send.get();
-                        count++;
-                    }catch (Exception e){
-                        TelegramError error = (TelegramError) e.getCause();
-                        System.out.println(error.getMessage());
-                        System.out.println("could not be added!");
-                    }
 
-                }
-                apiResponse.setCode(200);
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-
-        }
-        System.out.println(count);
-        return apiResponse;
-    }
-    private long addingUserId(String virtualPhoneNumber) throws Exception{
-        Init.init();
-        try(SimpleTelegramClientFactory clientFactory = new SimpleTelegramClientFactory()) {
-            TDLibSettings settings = config.getTDLibSettings(virtualPhoneNumber);
-            SimpleTelegramClientBuilder clientBuilder = config.getBuilder(clientFactory, settings);
-            AuthenticationSupplier user = config.getCurrentUser(settings, virtualPhoneNumber, clientFactory);
-            try (ExampleApp app = new ExampleApp(clientBuilder,user,0)){
-                TdApi.User me = app.getClient().getMeAsync().get(1, TimeUnit.MINUTES);
-                long id = me.id;
-                return id;
-            }
-        }
-    }
 
     @Override
     public void run() {

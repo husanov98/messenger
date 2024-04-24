@@ -18,11 +18,12 @@ import uz.mh.messenger.enums.StatementStatus;
 public class Statement extends Auditable{
     @Column(unique = true)
     private String statementId;
+    @Column(columnDefinition = "TEXT")
     private String text;
     private Integer sentCount;
     private Integer groupCount;
     @Enumerated(EnumType.STRING)
     private StatementStatus status = StatementStatus.ACTUAL;
     private String phoneNumber;
-
+    private Long messageId;
 }
