@@ -73,7 +73,7 @@ public class StatementService {
                 for (Statement statement : statements) {
                     StatementDto statementDto = statementMapper.mapToStatementDto(statement);
                     Optional<Manager> optionalManager = managerRepository.findByPhoneNumber(statementDto.getPhoneNumber());
-                    if (optionalManager.isPresent()) {
+                    if (optionalManager.isPresent() && statementDto.getSentCount() < 500) {
                         executor.submit(new TdlightService(config,managerRepository,statementDto, egs, statementRepository));
                     }else {
                         System.out.println("Bu bratan hali ro'yxatdan o'tmagan");

@@ -317,13 +317,15 @@ public class TdlightService implements Runnable{
     }
 
     private void sendToEgs(StatementDto statementDto,int count){
-        Integer groupCount = statementDto.getGroupCount();
+        int groupCount = statementDto.getGroupCount();
+        int sentCount = statementDto.getSentCount();
         if (groupCount < count){
             statementDto.setGroupCount(count);
         }
-        statementDto.setSentCount(statementDto.getSentCount() + count);
-        TgmData data = new TgmData(statementDto.getStatementId().substring(1),statementDto.getGroupCount(),statementDto.getSentCount());
+        statementDto.setSentCount(sentCount + count);
+        TgmData data = new TgmData(statementDto.getStatementId().substring(1),statementDto.getSentCount(),statementDto.getGroupCount());
         List<TgmData> dataList = List.of(data);
+        statementRepository.editStatementSentCount(statementDto.getGroupCount(),statementDto.getSentCount(),statementDto.getStatementId());
         egs.sendToEgs(dataList,"egs");
     }
 
