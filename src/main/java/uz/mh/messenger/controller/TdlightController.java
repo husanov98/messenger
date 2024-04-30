@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import uz.mh.messenger.exceptions.SchedulerNotStartException;
 import uz.mh.messenger.model.ApiResponse;
 import uz.mh.messenger.service.GetNotificationService;
+import uz.mh.messenger.service.StatementService;
 import uz.mh.messenger.service.TdlightService;
 
 
@@ -17,13 +18,15 @@ import uz.mh.messenger.service.TdlightService;
 public class TdlightController {
 
     private boolean isStart = false;
+    private final StatementService statementService;
 
     @Autowired
     private ScheduledAnnotationBeanPostProcessor postProcessor;
     private final TdlightService service;
     private final GetNotificationService notificationService;
 
-    public TdlightController(TdlightService service, GetNotificationService notificationService) {
+    public TdlightController(StatementService statementService, TdlightService service, GetNotificationService notificationService) {
+        this.statementService = statementService;
         this.service = service;
         this.notificationService = notificationService;
     }
@@ -40,6 +43,12 @@ public class TdlightController {
                                       @RequestPart(name = "code") String code) throws Exception {
         ApiResponse apiResponse = service.enterAuthenticationCode(phoneNumber, code);
         return new ResponseEntity<>(apiResponse, HttpStatusCode.valueOf(apiResponse.getCode()));
+    }
+    @PostMapping(value = "updateStatementStatus",consumes = {"multipart/form-data"})
+    public ResponseEntity<?> updateStatementStatus(@RequestPart(name = "status") String statementStatus,
+                                                   @RequestPart(name = "statementId") String statementId){
+        ApiResponse apiResponse = statementService.updateStatementStatus(statementStatus, statementId);
+        return new ResponseEntity<>(apiResponse,HttpStatusCode.valueOf(apiResponse.getCode()));
     }
 //    @GetMapping(value = "/get")
 //    public void get()throws Exception{

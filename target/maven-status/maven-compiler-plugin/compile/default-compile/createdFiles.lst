@@ -1,6 +1,5 @@
 uz/mh/messenger/config/CorsConfig.class
 uz/mh/messenger/model/ApiResponse.class
-uz/mh/messenger/bot/BotService.class
 uz/mh/messenger/service/GetNotificationService.class
 uz/mh/messenger/enums/StatementStatus.class
 uz/mh/messenger/config/WebConfig.class
@@ -21,7 +20,6 @@ uz/mh/messenger/model/Session.class
 uz/mh/messenger/dto/TgmData.class
 uz/mh/messenger/dto/StatementDto.class
 uz/mh/messenger/dto/Template.class
-uz/mh/messenger/config/BotConfiguration.class
 uz/mh/messenger/model/Statement.class
 uz/mh/messenger/MessengerApplication.class
 uz/mh/messenger/exceptions/SchedulerNotStartException.class

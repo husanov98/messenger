@@ -171,7 +171,6 @@ public class TdlightService implements Runnable{
         int s = 0;
 
             s++;
-            System.out.println(s);
             try (SimpleTelegramClientFactory clientFactory = new SimpleTelegramClientFactory()) {
                 TDLibSettings settings = config.getTDLibSettings(statementDto.getPhoneNumber());
                 SimpleTelegramClientBuilder clientBuilder = config.getBuilder(clientFactory, settings);
@@ -180,7 +179,7 @@ public class TdlightService implements Runnable{
                     for (Long id : Idlar.superGroupIds) {
                         s++;
                         System.out.println(Thread.currentThread().getName());
-                        System.out.println(s);
+                        System.out.println(s + ", " + id);
                         try {
                             TdApi.SendMessage messageToGroup = new TdApi.SendMessage();
                             TdApi.ParseTextEntities textEntities = config.parseModeHtml(statementDto.getStatementId() + statementDto.getText());

@@ -100,16 +100,14 @@ public class GetNotificationService {
     private void save(String id,String text,Long messageId,StatementStatus status){
         String phoneNumber = getPhoneNumber(text);
         StatementDto statementDto = new StatementDto();
-
-            statementDto.setMessageId(messageId);
-            statementDto.setStatementId(id);
-            statementDto.setStatus(status);
-            statementDto.setSentCount(0);
-            statementDto.setGroupCount(0);
-            statementDto.setText(text);
-            statementDto.setPhoneNumber(phoneNumber);
-            statementService.saveStatement(statementDto);
-
+        statementDto.setMessageId(messageId);
+        statementDto.setStatementId(id);
+        statementDto.setStatus(status);
+        statementDto.setSentCount(0);
+        statementDto.setGroupCount(0);
+        statementDto.setText(text);
+        statementDto.setPhoneNumber(phoneNumber);
+        statementService.saveStatement(statementDto);
     }
     private String getPhoneNumber(String text){
         //am
