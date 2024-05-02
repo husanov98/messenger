@@ -88,14 +88,14 @@ public class StatementService {
         }
 
     }
-    public ApiResponse updateStatementStatus(String status, String statementId){
+    public ApiResponse updateStatementStatus(String status, Integer statementId){
         ApiResponse apiResponse = new ApiResponse();
-        Optional<Statement> statementOptional = statementRepository.findByStatementId(statementId);
+        Optional<Statement> statementOptional = statementRepository.findByStatementId("#" + statementId);
         if (statementOptional.isPresent()){
             if (status.equals("В поиске перевозчика ") || status.equals("Актуальный")){
-                statementRepository.editStatementStatusToActual(statementId);
+                statementRepository.editStatementStatusToActual("#" + statementId);
             }else{
-                statementRepository.editStatementStatusToClosed(statementId);
+                statementRepository.editStatementStatusToClosed("#" + statementId);
             }
             apiResponse.setCode(200);
             apiResponse.setSuccess(true);

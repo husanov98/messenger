@@ -46,7 +46,7 @@ public class TdlightController {
     }
     @PostMapping(value = "updateStatementStatus",consumes = {"multipart/form-data"})
     public ResponseEntity<?> updateStatementStatus(@RequestPart(name = "status") String statementStatus,
-                                                   @RequestPart(name = "statementId") String statementId){
+                                                   @RequestPart(name = "statementId") Integer statementId){
         ApiResponse apiResponse = statementService.updateStatementStatus(statementStatus, statementId);
         return new ResponseEntity<>(apiResponse,HttpStatusCode.valueOf(apiResponse.getCode()));
     }
