@@ -88,7 +88,7 @@ public class StatementService {
         }
 
     }
-    public ApiResponse updateStatementStatus(String status, Integer statementId){
+    public ApiResponse updateStatementStatus(String status, String statementId){
         ApiResponse apiResponse = new ApiResponse();
         Optional<Statement> statementOptional = statementRepository.findByStatementId("#" + statementId);
         if (statementOptional.isPresent()){
