@@ -102,7 +102,7 @@ public class StatementService {
             apiResponse.setContent(new MessageResponse("Statement status changed successfully"));
             apiResponse.setError("");
         }else {
-            apiResponse.setCode(404);
+            apiResponse.setCode(200);
             apiResponse.setSuccess(false);
             apiResponse.setContent(new MessageResponse(""));
             apiResponse.setError("Statement not found");
