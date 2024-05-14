@@ -92,7 +92,7 @@ public class StatementService {
         ApiResponse apiResponse = new ApiResponse();
         Optional<Statement> statementOptional = statementRepository.findByStatementId("#" + statementId);
         if (statementOptional.isPresent()){
-            if (status.equals("В поиске перевозчика ") || status.equals("Актуальный")){
+            if (status.contains("В поиске перевозчика") || status.contains("Актуальный")){
                 statementRepository.editStatementStatusToActual("#" + statementId);
             }else{
                 statementRepository.editStatementStatusToClosed("#" + statementId);
